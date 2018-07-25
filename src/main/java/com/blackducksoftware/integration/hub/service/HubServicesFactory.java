@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 import com.blackducksoftware.integration.exception.IntegrationException;
 import com.blackducksoftware.integration.hub.cli.CLIDownloadUtility;
-import com.blackducksoftware.integration.hub.cli.SignatureScanConfig;
+import com.blackducksoftware.integration.hub.cli.configuration.SignatureScanConfig;
 import com.blackducksoftware.integration.hub.cli.SimpleScanUtility;
 import com.blackducksoftware.integration.hub.configuration.HubServerConfig;
 import com.blackducksoftware.integration.hub.notification.content.detail.NotificationContentDetailFactory;

@@ -1,9 +1,9 @@
 /**
  * hub-common
- *
+ * <p>
  * Copyright (C) 2018 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -11,9 +11,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -21,7 +21,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.blackducksoftware.integration.hub.configuration;
+package com.blackducksoftware.integration.hub.cli.configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,43 +31,36 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.blackducksoftware.integration.hub.cli.SignatureScanConfig;
 import com.blackducksoftware.integration.log.IntLogger;
 import com.blackducksoftware.integration.util.Stringable;
 
 public class HubScanConfig extends Stringable {
-    private final CommonScanConfig commonScanConfig;
+    private final CommandArguments commandArguments;
     private final boolean cleanupLogsOnSuccess;
     private final Map<String, String> targetToCodeLocationName;
     private final Map<String, Set<String>> targetToExclusionPatterns;
     private final Set<String> scanTargetPaths;
 
-    public HubScanConfig(final CommonScanConfig commonScanConfig, final Set<String> scanTargetPaths, final boolean cleanupLogsOnSuccess,
-            final Map<String, Set<String>> targetToExclusionPatterns,
-            final Map<String, String> targetToCodeLocationName) {
-        this.commonScanConfig = commonScanConfig;
+    public HubScanConfig(CommandArguments commandArguments, Set<String> scanTargetPaths, boolean cleanupLogsOnSuccess, Map<String, Set<String>> targetToExclusionPatterns, Map<String, String> targetToCodeLocationName) {
+        this.commandArguments = commandArguments;
         this.scanTargetPaths = scanTargetPaths;
         this.cleanupLogsOnSuccess = cleanupLogsOnSuccess;
         this.targetToExclusionPatterns = targetToExclusionPatterns;
         this.targetToCodeLocationName = targetToCodeLocationName;
     }
 
-    public List<SignatureScanConfig> createSignatureScanConfigs() {
-        final List<SignatureScanConfig> signatureScanConfigs = new ArrayList<>();
-        for (final String scanTarget : scanTargetPaths) {
+    public List<TargetArguments> createTargetArguments() {
+        List<TargetArguments> targetArguments = new ArrayList<>();
+        for (String scanTarget : scanTargetPaths) {
             String[] exclusionPatterns = new String[0];
-            final Set<String> patterns = targetToExclusionPatterns.get(scanTarget);
+            Set<String> patterns = targetToExclusionPatterns.get(scanTarget);
             if (null != patterns && !patterns.isEmpty()) {
                 exclusionPatterns = patterns.toArray(new String[patterns.size()]);
             }
-            final SignatureScanConfig signatureScanConfig = new SignatureScanConfig(commonScanConfig, targetToCodeLocationName.get(scanTarget), exclusionPatterns, scanTarget);
-            signatureScanConfigs.add(signatureScanConfig);
+            TargetArguments singleTargetArguments = new TargetArguments(targetToCodeLocationName.get(scanTarget), exclusionPatterns, scanTarget);
+            targetArguments.add(singleTargetArguments);
         }
-        return signatureScanConfigs;
-    }
-
-    public CommonScanConfig getCommonScanConfig() {
-        return commonScanConfig;
+        return targetArguments;
     }
 
     public Set<String> getScanTargetPaths() {
@@ -86,24 +79,24 @@ public class HubScanConfig extends Stringable {
         return targetToCodeLocationName;
     }
 
-    public void print(final IntLogger logger) {
+    public void print(IntLogger logger) {
         try {
             logger.alwaysLog("--> Using Working Directory: " + commonScanConfig.getWorkingDirectory().getCanonicalPath());
-        } catch (final IOException e) {
+        } catch (IOException e) {
             logger.alwaysLog("Extremely unlikely exception getting the canonical path: " + e.getMessage());
         }
         logger.alwaysLog("--> Scanning the following targets:");
         if (scanTargetPaths != null) {
-            for (final String target : scanTargetPaths) {
-                final String codeLocationName = getTargetToCodeLocationName().get(target);
+            for (String target : scanTargetPaths) {
+                String codeLocationName = getTargetToCodeLocationName().get(target);
                 logger.alwaysLog(String.format("--> Target: %s", target));
                 if (StringUtils.isNotBlank(codeLocationName)) {
                     logger.alwaysLog(String.format("    --> Code Location Name: %s", codeLocationName));
                 }
-                final Set<String> excludePatterns = getTargetToExclusionPatterns().get(target);
+                Set<String> excludePatterns = getTargetToExclusionPatterns().get(target);
                 if (excludePatterns != null && !excludePatterns.isEmpty()) {
                     logger.alwaysLog("--> Directory Exclusion Patterns:");
-                    for (final String exclusionPattern : excludePatterns) {
+                    for (String exclusionPattern : excludePatterns) {
                         logger.alwaysLog(String.format("--> Exclusion Pattern: %s", exclusionPattern));
                     }
                 }

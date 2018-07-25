@@ -43,7 +43,7 @@ import com.blackducksoftware.integration.hub.cli.CLILocation;
 import com.blackducksoftware.integration.hub.cli.parallel.ParallelSimpleScanner;
 import com.blackducksoftware.integration.hub.cli.summary.ScanServiceOutput;
 import com.blackducksoftware.integration.hub.cli.summary.ScanTargetOutput;
-import com.blackducksoftware.integration.hub.configuration.HubScanConfig;
+import com.blackducksoftware.integration.hub.cli.configuration.HubScanConfig;
 import com.blackducksoftware.integration.hub.configuration.HubServerConfig;
 import com.blackducksoftware.integration.hub.service.model.ProjectVersionWrapper;
 import com.blackducksoftware.integration.hub.summary.Result;

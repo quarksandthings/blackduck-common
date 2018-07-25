@@ -1,9 +1,9 @@
 /**
  * hub-common
- *
+ * <p>
  * Copyright (C) 2018 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -11,9 +11,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -21,7 +21,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.blackducksoftware.integration.hub.configuration;
+package com.blackducksoftware.integration.hub.cli.configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,13 +45,13 @@ public class HubScanConfigValidator extends AbstractValidator {
     private File workingDirectory;
     private String scanMemory;
     private final Set<String> scanTargetPaths = new HashSet<>();
-    private Map<String, Set<String>> targetToExclusionPatterns = new HashMap<>();
+    private final Map<String, Set<String>> targetToExclusionPatterns = new HashMap<>();
     private boolean disableScanTargetPathExistenceCheck;
     private boolean enableScanTargetPathsWithinWorkingDirectoryCheck;
 
     @Override
     public ValidationResults assertValid() {
-        final ValidationResults result = new ValidationResults();
+        ValidationResults result = new ValidationResults();
 
         validateScanMemory(result, DEFAULT_MEMORY_IN_MEGABYTES);
         validateScanTargetPaths(result, workingDirectory);
@@ -60,11 +60,11 @@ public class HubScanConfigValidator extends AbstractValidator {
         return result;
     }
 
-    public void validateScanMemory(final ValidationResults result) {
+    public void validateScanMemory(ValidationResults result) {
         validateScanMemory(result, null);
     }
 
-    private void validateScanMemory(final ValidationResults result, final Integer defaultScanMemory) {
+    private void validateScanMemory(ValidationResults result, Integer defaultScanMemory) {
         if (StringUtils.isBlank(scanMemory)) {
             result.addResult(HubScanConfigFieldEnum.SCANMEMORY, new ValidationResult(ValidationResultEnum.ERROR, "No scan memory was specified."));
             return;
@@ -72,33 +72,31 @@ public class HubScanConfigValidator extends AbstractValidator {
         int scanMemoryInt = 0;
         try {
             scanMemoryInt = stringToInteger(scanMemory);
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             result.addResult(HubScanConfigFieldEnum.SCANMEMORY, new ValidationResult(ValidationResultEnum.ERROR, e.getMessage()));
             return;
         }
         if (scanMemoryInt < MINIMUM_MEMORY_IN_MEGABYTES) {
-            result.addResult(HubScanConfigFieldEnum.SCANMEMORY, new ValidationResult(ValidationResultEnum.ERROR,
-                    "The minimum amount of memory for the scan is " + MINIMUM_MEMORY_IN_MEGABYTES + " MB."));
+            result.addResult(HubScanConfigFieldEnum.SCANMEMORY, new ValidationResult(ValidationResultEnum.ERROR, "The minimum amount of memory for the scan is " + MINIMUM_MEMORY_IN_MEGABYTES + " MB."));
         }
     }
 
     /**
      * If running this validation outside of a Build, make sure you run disableScanTargetPathExistenceCheck() because the targets may not exist yet.
      */
-    public void validateScanTargetPaths(final ValidationResults result) {
+    public void validateScanTargetPaths(ValidationResults result) {
         validateScanTargetPaths(result, null);
     }
 
-    private void validateScanTargetPaths(final ValidationResults result,
-            final File defaultTargetPath) {
+    private void validateScanTargetPaths(ValidationResults result, File defaultTargetPath) {
         try {
             if (scanTargetPaths.isEmpty() && defaultTargetPath != null) {
                 scanTargetPaths.add(defaultTargetPath.getCanonicalPath());
             }
 
-            final Set<String> targetPaths = new HashSet<>();
-            for (final String currentTargetPath : scanTargetPaths) {
-                final String targetPath;
+            Set<String> targetPaths = new HashSet<>();
+            for (String currentTargetPath : scanTargetPaths) {
+                String targetPath;
                 if (StringUtils.isBlank(currentTargetPath) && defaultTargetPath != null) {
                     targetPath = defaultTargetPath.getCanonicalPath();
                 } else {
@@ -112,24 +110,21 @@ public class HubScanConfigValidator extends AbstractValidator {
                         // defaultTargetPath during the build
                         // Since we dont know the defaultTargetPath at this point we
                         // only validate non blank entries
-                        final File target = new File(targetPath);
+                        File target = new File(targetPath);
 
                         if (target == null || !target.exists()) {
-                            result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR,
-                                    "The scan target '" + target.getCanonicalPath() + "' does not exist or can not be read."));
+                            result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR, "The scan target '" + target.getCanonicalPath() + "' does not exist or can not be read."));
                         }
 
                         if (enableScanTargetPathsWithinWorkingDirectoryCheck) {
-                            final String targetCanonicalPath;
+                            String targetCanonicalPath;
                             try {
                                 targetCanonicalPath = target.getCanonicalPath();
                                 if (!targetCanonicalPath.startsWith(workingDirectory.getCanonicalPath())) {
-                                    result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(
-                                            ValidationResultEnum.ERROR, "Can not scan targets outside the working directory."));
+                                    result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR, "Can not scan targets outside the working directory."));
                                 }
-                            } catch (final IOException e) {
-                                result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR,
-                                        "Could not get the canonical path for Target : " + targetPath));
+                            } catch (IOException e) {
+                                result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR, "Could not get the canonical path for Target : " + targetPath));
                             }
                         }
                     }
@@ -137,69 +132,65 @@ public class HubScanConfigValidator extends AbstractValidator {
             }
             scanTargetPaths.clear();
             scanTargetPaths.addAll(targetPaths);
-        } catch (final IOException e) {
-            result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR,
-                    e.getMessage(), e));
+        } catch (IOException e) {
+            result.addResult(HubScanConfigFieldEnum.TARGETS, new ValidationResult(ValidationResultEnum.ERROR, e.getMessage(), e));
         }
     }
 
-    public void validateExcludePatterns(final ValidationResults result) {
+    public void validateExcludePatterns(ValidationResults result) {
         validateExcludePatterns(result, targetToExclusionPatterns);
     }
 
-    private void validateExcludePatterns(final ValidationResults result, final Map<String, Set<String>> targetToExclusionPatterns) {
+    private void validateExcludePatterns(ValidationResults result, Map<String, Set<String>> targetToExclusionPatterns) {
         if (targetToExclusionPatterns == null || targetToExclusionPatterns.isEmpty()) {
             return;
         }
-        for (final Map.Entry<String, Set<String>> targetToExclusionPatternEntry : targetToExclusionPatterns.entrySet()) {
-            for (final String excludePattern : targetToExclusionPatternEntry.getValue()) {
+        for (Map.Entry<String, Set<String>> targetToExclusionPatternEntry : targetToExclusionPatterns.entrySet()) {
+            for (String excludePattern : targetToExclusionPatternEntry.getValue()) {
                 validateExcludePattern(result, excludePattern);
             }
         }
     }
 
-    public void validateExcludePattern(final ValidationResults result, final String excludePattern) {
+    public void validateExcludePattern(ValidationResults result, String excludePattern) {
         if (StringUtils.isNotBlank(excludePattern)) {
             if (!excludePattern.startsWith("/")) {
-                result.addResult(HubScanConfigFieldEnum.EXCLUDE_PATTERNS,
-                        new ValidationResult(ValidationResultEnum.WARN, "The exclusion pattern : " + excludePattern + " must start with a /."));
+                result.addResult(HubScanConfigFieldEnum.EXCLUDE_PATTERNS, new ValidationResult(ValidationResultEnum.WARN, "The exclusion pattern : " + excludePattern + " must start with a /."));
             }
             if (!excludePattern.endsWith("/")) {
-                result.addResult(HubScanConfigFieldEnum.EXCLUDE_PATTERNS,
-                        new ValidationResult(ValidationResultEnum.WARN, "The exclusion pattern : " + excludePattern + " must end with a /."));
+                result.addResult(HubScanConfigFieldEnum.EXCLUDE_PATTERNS, new ValidationResult(ValidationResultEnum.WARN, "The exclusion pattern : " + excludePattern + " must end with a /."));
             }
             if (excludePattern.contains("**")) {
-                result.addResult(HubScanConfigFieldEnum.EXCLUDE_PATTERNS,
-                        new ValidationResult(ValidationResultEnum.WARN, " The exclusion pattern : " + excludePattern + " can not contain **."));
+                result.addResult(HubScanConfigFieldEnum.EXCLUDE_PATTERNS, new ValidationResult(ValidationResultEnum.WARN, " The exclusion pattern : " + excludePattern + " can not contain **."));
             }
         }
     }
 
-    public void setScanMemory(final int scanMemory) {
+    public void setScanMemory(int scanMemory) {
         setScanMemory(String.valueOf(scanMemory));
     }
 
-    public void setScanMemory(final String scanMemory) {
+    public void setScanMemory(String scanMemory) {
         this.scanMemory = scanMemory;
     }
 
-    public void addScanTargetPath(final String scanTargetPath) {
+    public void addScanTargetPath(String scanTargetPath) {
         scanTargetPaths.add(scanTargetPath);
     }
 
-    public void addAllScanTargetPaths(final Set<String> scanTargetPaths) {
+    public void addAllScanTargetPaths(Set<String> scanTargetPaths) {
         this.scanTargetPaths.addAll(scanTargetPaths);
     }
 
-    public void addTargetToExclusionPatterns(final String scanTargetPath, final Set<String> exclusionPatterns) {
+    public void addTargetToExclusionPatterns(String scanTargetPath, Set<String> exclusionPatterns) {
         targetToExclusionPatterns.put(scanTargetPath, exclusionPatterns);
     }
 
-    public void addAllTargetToExclusionPatterns(final Map<String, Set<String>> targetToExclusionPatterns) {
+    public void addAllTargetToExclusionPatterns(Map<String, Set<String>> targetToExclusionPatterns) {
         this.targetToExclusionPatterns.putAll(targetToExclusionPatterns);
     }
 
-    public void setWorkingDirectory(final File workingDirectory) {
+    public void setWorkingDirectory(File workingDirectory) {
         this.workingDirectory = workingDirectory;
     }
 

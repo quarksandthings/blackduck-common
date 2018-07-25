@@ -33,7 +33,7 @@ import org.apache.commons.io.FileUtils;
 import com.blackducksoftware.integration.exception.IntegrationException;
 import com.blackducksoftware.integration.hub.api.view.ScanSummaryView;
 import com.blackducksoftware.integration.hub.cli.CLILocation;
-import com.blackducksoftware.integration.hub.cli.SignatureScanConfig;
+import com.blackducksoftware.integration.hub.cli.configuration.SignatureScanConfig;
 import com.blackducksoftware.integration.hub.cli.SimpleScanUtility;
 import com.blackducksoftware.integration.hub.cli.summary.ScanTargetOutput;
 import com.blackducksoftware.integration.hub.configuration.HubServerConfig;
