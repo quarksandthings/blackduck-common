@@ -81,6 +81,32 @@ public class ProjectGetService extends DataService {
         throw new DoesNotExistException(String.format("Could not find the version: %s for project: %s", projectVersionName, project.name));
     }
 
+    /**
+     * If an case-insensitive match can be found for projectName, the first such match will be returned. Otherwise, an Optional.empty() is returned.
+     */
+    public Optional<ProjectView> getProjectViewByProjectName(final String projectName) throws IntegrationException {
+        final List<ProjectView> allProjectItems = getAllProjectMatches(projectName);
+        for (final ProjectView project : allProjectItems) {
+            if (projectName.equalsIgnoreCase(project.name)) {
+                return Optional.of(project);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public ProjectVersionView getProjectVersion(final ProjectView project, final String projectVersionName) throws IntegrationException {
+        final Optional<HubQuery> hubQuery = HubQuery.createQuery("versionName", projectVersionName);
+        final Request.Builder requestBuilder = RequestFactory.createCommonGetRequestBuilder(hubQuery);
+
+        final List<ProjectVersionView> allProjectVersionMatchingItems = hubService.getAllResponses(project, ProjectView.VERSIONS_LINK_RESPONSE, requestBuilder);
+        final ProjectVersionView projectVersion = findMatchingVersion(allProjectVersionMatchingItems, projectVersionName);
+        if (null != projectVersion) {
+            return projectVersion;
+        }
+        throw new DoesNotExistException(String.format("Could not find the version: %s for project: %s", projectVersionName, project.name));
+    }
+
     public ProjectVersionWrapper getProjectVersion(final String projectName, final String projectVersionName) throws IntegrationException {
         final ProjectView projectView = getProjectByName(projectName);
         final ProjectVersionView projectVersionView = getProjectVersion(projectView, projectVersionName);
@@ -88,6 +114,9 @@ public class ProjectGetService extends DataService {
         return new ProjectVersionWrapper(projectView, projectVersionView);
     }
 
+    /**
+     * While project names are case-insensitive, version names are case-sensitive. This will find an exact matching version, or Optional.empty().
+     */
     public ProjectVersionView findMatchingVersion(final List<ProjectVersionView> projectVersions, final String projectVersionName) throws HubIntegrationException {
         for (final ProjectVersionView version : projectVersions) {
             if (projectVersionName.equals(version.versionName)) {
